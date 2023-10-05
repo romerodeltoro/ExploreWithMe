@@ -1,48 +1,50 @@
 package ru.practicum.stats.client;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.stats.dto.EndpointHit;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
-public class StatsClient {
+public class StatsClient extends BaseClient{
 
-    private String statsUrl = "http://localhost:9090";
+    private static final String ENDPOINTHIT_API_PREFIX = "/hit";
+    private static final String VIEWSTATS_API_PREFIX = "/stats";
 
-    private final RestTemplate restTemplate;
-
-    public HttpStatus createEndpointHit(EndpointHit hit) {
-        ResponseEntity<EndpointHit> response = restTemplate.postForEntity(statsUrl + "/hit", hit, EndpointHit.class);
-        return response.getStatusCode();
+    @Autowired
+    public StatsClient(@Value("${stats-client.url}") String serverUrl, RestTemplateBuilder builder) {
+        super(builder
+                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
+                        .requestFactory(HttpComponentsClientHttpRequestFactory::new)
+                        .build()
+        );
     }
 
-    public Object getViewStats(String start, String end, Boolean unique, List<String> uris) {
-//        start = URLDecoder.decode(start, StandardCharsets.UTF_8.toString());
+    public void createEndpointHit(EndpointHit hit) {
+        post(ENDPOINTHIT_API_PREFIX, hit);
+    }
 
-        Map<String, Object> queryParams = new HashMap<>();
-        queryParams.put("start", start);
-        queryParams.put("end", end);
-        queryParams.put("unique", unique);
-        queryParams.put("uris", uris);
+    public ResponseEntity<Object> getViewStats(String start, String end, Boolean unique, List<String> uris) {
 
-        ResponseEntity<Object> response = restTemplate
-                .getForEntity(statsUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}"
-                        , Object.class, queryParams);
+        Map<String, Object> parameters;
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            return response.getBody();
+        if (uris == null) {
+            parameters = Map.of( "start", start,"end", end,"unique", unique);
+            return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&unique={unique}", parameters);
         } else {
-            throw new RuntimeException("Что-то пошло не так: " + response.getStatusCode());
+            parameters = Map.of("start", start,"end", end,"uris", uris,"unique", unique);
+            return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
         }
+
+
     }
 }
