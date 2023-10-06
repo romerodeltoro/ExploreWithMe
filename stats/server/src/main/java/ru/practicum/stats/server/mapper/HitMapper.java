@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import ru.practicum.stats.dto.EndpointHit;
-import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.server.model.Hit;
 
 @Mapper
