@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.stats.dto.EndpointHit;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +38,17 @@ public class StatsClient extends BaseClient {
         Map<String, Object> parameters;
 
         if (uris == null) {
-            parameters = Map.of("start", start, "end", end, "unique", unique);
+            parameters = new HashMap<>();
+            parameters.put("start", start);
+            parameters.put("end", end);
+            parameters.put("unique", unique);
             return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&unique={unique}", parameters);
         } else {
-            parameters = Map.of("start", start, "end", end, "uris", uris, "unique", unique);
+            parameters = new HashMap<>();
+            parameters.put("start", start);
+            parameters.put("end", end);
+            parameters.put("uris", uris);
+            parameters.put("unique", unique);
             return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
         }
 
