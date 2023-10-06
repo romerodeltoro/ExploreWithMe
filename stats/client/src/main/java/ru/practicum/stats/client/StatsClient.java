@@ -10,12 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.stats.dto.EndpointHit;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class StatsClient extends BaseClient{
+public class StatsClient extends BaseClient {
 
     private static final String ENDPOINTHIT_API_PREFIX = "/hit";
     private static final String VIEWSTATS_API_PREFIX = "/stats";
@@ -23,9 +22,9 @@ public class StatsClient extends BaseClient{
     @Autowired
     public StatsClient(@Value("${stats-client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                        .requestFactory(HttpComponentsClientHttpRequestFactory::new)
-                        .build()
+                .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
+                .requestFactory(HttpComponentsClientHttpRequestFactory::new)
+                .build()
         );
     }
 
@@ -38,10 +37,10 @@ public class StatsClient extends BaseClient{
         Map<String, Object> parameters;
 
         if (uris == null) {
-            parameters = Map.of( "start", start,"end", end,"unique", unique);
+            parameters = Map.of("start", start, "end", end, "unique", unique);
             return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&unique={unique}", parameters);
         } else {
-            parameters = Map.of("start", start,"end", end,"uris", uris,"unique", unique);
+            parameters = Map.of("start", start, "end", end, "uris", uris, "unique", unique);
             return get(VIEWSTATS_API_PREFIX + "?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
         }
 

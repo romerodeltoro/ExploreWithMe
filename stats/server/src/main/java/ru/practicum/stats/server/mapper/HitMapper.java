@@ -7,8 +7,6 @@ import ru.practicum.stats.dto.EndpointHit;
 import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.server.model.Hit;
 
-import java.util.List;
-
 @Mapper
 public interface HitMapper {
 
@@ -19,8 +17,5 @@ public interface HitMapper {
 
     @Mapping(source = "timestamp", target = "timestamp", dateFormat = "yyyy-MM-dd HH:mm:ss")
     Hit toHit(EndpointHit hitDto);
-
-
-    ViewStats toViewStats(Hit hit);
 
 }

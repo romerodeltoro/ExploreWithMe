@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class HitServiceImpl implements HitService{
+public class HitServiceImpl implements HitService {
     private final HitRepository repository;
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -39,7 +39,7 @@ public class HitServiceImpl implements HitService{
 
         List<Object[]> results;
 
-        if(uris == null) {
+        if (uris == null) {
             results = getHitsIfUrisIsNull(startDate, endDate, unique);
         } else {
             results = getHitsIfUris(startDate, endDate, unique, uris);
@@ -56,7 +56,7 @@ public class HitServiceImpl implements HitService{
     }
 
     private List<Object[]> getHitsIfUrisIsNull(LocalDateTime start, LocalDateTime end, Boolean unique) {
-        if(unique) {
+        if (unique) {
             return repository.findAllByTimestampWhereUrisIsNullAndUniqueTrue(start, end);
         } else {
             return repository.findAllByTimestampWhereUrisIsNull(start, end);
@@ -64,7 +64,7 @@ public class HitServiceImpl implements HitService{
     }
 
     private List<Object[]> getHitsIfUris(LocalDateTime start, LocalDateTime end, Boolean unique, List<String> uris) {
-        if(!unique) {
+        if (!unique) {
             return repository.findAllByTimestampWhereUris(start, end, uris);
         } else {
             return repository.findAllByTimestampWhereUrisAndUniqueTrue(start, end, uris);
