@@ -24,8 +24,8 @@ public class UsersAdminController {
     @GetMapping
     public ResponseEntity<List<User>> getUsers(
             @RequestParam(name = "ids", required = false) List<Long> ids,
-            @RequestParam(value = "from", defaultValue = "0", required = false) @Min(0) Integer from,
-            @RequestParam(value = "size", defaultValue = "10", required = false) @Min(1) @Max(100) Integer size) {
+            @RequestParam(name = "from", defaultValue = "0", required = false) @Min(0) Integer from,
+            @RequestParam(name = "size", defaultValue = "10", required = false) @Min(1) @Max(100) Integer size) {
         return ResponseEntity.ok().body(userService.getUsers(ids, from, size));
     }
 

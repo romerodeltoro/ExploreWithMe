@@ -24,8 +24,8 @@ public class CategoriesPublicController {
 
     @GetMapping
     public ResponseEntity<List<Category>> getCategories(
-            @RequestParam(value = "from", defaultValue = "0") @Min(0) Integer from,
-            @RequestParam(value = "size", defaultValue = "10") @Min(1) @Max(100) Integer size) {
+            @RequestParam(name = "from", defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) Integer size) {
         return ResponseEntity.ok().body(service.getAllCategories(from, size));
     }
 

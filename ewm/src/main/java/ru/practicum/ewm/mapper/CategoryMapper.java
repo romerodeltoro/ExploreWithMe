@@ -6,10 +6,12 @@ import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.category.CategoryDto;
 
 @Mapper
-public interface CategoriesMapper {
+public interface CategoryMapper {
 
-    CategoriesMapper INSTANCE = Mappers.getMapper(CategoriesMapper.class);
+    CategoryMapper INSTANCE = Mappers.getMapper(CategoryMapper.class);
 
     Category toCategory(CategoryDto categoryDto);
+
+//    CategoryDto toCategoryDto(Category category);
 
 }

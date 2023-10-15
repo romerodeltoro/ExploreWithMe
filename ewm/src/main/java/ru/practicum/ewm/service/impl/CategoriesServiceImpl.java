@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.CategoriesNotFoundException;
-import ru.practicum.ewm.mapper.CategoriesMapper;
+import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.category.CategoryDto;
 import ru.practicum.ewm.service.CategoriesService;
@@ -24,7 +24,7 @@ public class CategoriesServiceImpl implements CategoriesService {
     @Override
     @Transactional
     public Category createCategory(CategoryDto newCategory) {
-        Category category = categoriesRepository.save(CategoriesMapper.INSTANCE.toCategory(newCategory));
+        Category category = categoriesRepository.save(CategoryMapper.INSTANCE.toCategory(newCategory));
         log.info("Создана новая категория - {}", newCategory);
         return category;
     }

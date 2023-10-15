@@ -1,6 +1,7 @@
 package ru.practicum.ewm.model.event;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.ewm.model.Location;
 import ru.practicum.ewm.model.LocationDto;
 import ru.practicum.ewm.model.category.Category;
@@ -23,22 +24,23 @@ public class Event {
     private Long id;
     @Column(name = "annotation", nullable = false)
     private String annotation;
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
-    private Integer confirmedRequests;
-    @Column(name = "created_on", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime cratedOn;
+    @Column(name = "created_on")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn = LocalDateTime.now();
     @Column(name = "description", nullable = false)
     private String description;
     @Column(name = "event_date", nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id")
-    private UserShort initiator;
+    private User initiator;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
-    private LocationDto location;
+    private Location location;
     @Column(name = "paid", nullable = false)
     private Boolean paid;
     @Column(name = "participant_limit")
@@ -52,25 +54,5 @@ public class Event {
     private EventState state = EventState.PENDING;
     @Column(name = "title", nullable = false)
     private String title;
-    private Integer views;
-
-
-    enum EventState {
-        PENDING, PUBLISHED, CANCELED;
-    }
 }
 
-/*public enum EventState {
-    PENDING,
-    PUBLISHED,
-    CANCELED;
-
-    private final String stateEnum;
-
-    EventState(String state) {
-        this.stateEnum = state;
-    }
-
-    public String getStateEnum() {
-        return stateEnum;
-    }*/
