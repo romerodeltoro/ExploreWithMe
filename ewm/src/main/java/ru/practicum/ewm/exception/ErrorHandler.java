@@ -48,8 +48,9 @@ public class ErrorHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violations);
     }
 
-    @ExceptionHandler(CategoriesNotFoundException.class)
-    public ResponseEntity<ApiError> categoriesNotFoundException(CategoriesNotFoundException e) {
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> notFoundException(NotFoundException e) {
         log.error(e.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -61,54 +62,54 @@ public class ErrorHandler {
                         .build());
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiError> userNotFoundException(UserNotFoundException e) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiError> conflictException(ConflictException e) {
         log.error(e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.CONFLICT)
                 .body(ApiError.builder()
-                        .status(HttpStatus.NOT_FOUND)
-                        .reason("The required object was not found")
+                        .status(HttpStatus.CONFLICT)
+                        .reason("Integrity constraint has been violated")
                         .message(e.getMessage())
                         .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
                         .build());
     }
 
-    @ExceptionHandler(EventNotFoundException.class)
-    public ResponseEntity<ApiError> eventNotFoundException(EventNotFoundException e) {
+    @ExceptionHandler(OperationConditionsException.class)
+    public ResponseEntity<ApiError> operationConditionsException(OperationConditionsException e) {
         log.error(e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.CONFLICT)
                 .body(ApiError.builder()
-                        .status(HttpStatus.NOT_FOUND)
-                        .reason("The required object was not found")
+                        .status(HttpStatus.CONFLICT)
+                        .reason("For the requested operation the conditions are not met")
                         .message(e.getMessage())
                         .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
                         .build());
     }
+
 
     @ExceptionHandler(EventValidateException.class)
-    public ResponseEntity<List<ApiError>> eventValidateException(EventValidateException e) {
-        log.error(e.getMessage());
-        final List<ApiError> violations = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> ApiError.builder()
-                        .message(error.getDefaultMessage())
-                        .status(HttpStatus.BAD_REQUEST)
-                        .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
-                        .reason(error.getField())
-                        .build())
-                .collect(Collectors.toList());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violations);
-    }
-
-    @ExceptionHandler(EventDateValidateException.class)
-    public ResponseEntity<ApiError> eventDateValidateException(EventDateValidateException e) {
+    public ResponseEntity<ApiError> eventValidateException(EventValidateException e) {
         log.error(e.getMessage());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ApiError.builder()
                         .status(HttpStatus.FORBIDDEN)
                         .reason("For the requested operation the conditions are not met")
+                        .message(e.getMessage())
+                        .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
+                        .build());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> badRequestException(BadRequestException e) {
+        log.error(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .reason("Incorrectly made request")
                         .message(e.getMessage())
                         .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
                         .build());

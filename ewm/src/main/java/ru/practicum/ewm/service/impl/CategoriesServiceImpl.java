@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.exception.CategoriesNotFoundException;
+import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.category.CategoryDto;
 import ru.practicum.ewm.service.CategoriesService;
 import ru.practicum.ewm.storage.CategoriesRepository;
+import ru.practicum.ewm.storage.EventRepository;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ import java.util.List;
 public class CategoriesServiceImpl implements CategoriesService {
 
     private final CategoriesRepository categoriesRepository;
+    private final EventRepository eventRepository;
     @Override
     @Transactional
     public Category createCategory(CategoryDto newCategory) {
@@ -50,6 +53,10 @@ public class CategoriesServiceImpl implements CategoriesService {
     @Transactional
     public void deleteCategory(Long catId) {
         findCategoryByIdOrElseThrow(catId);
+        if (eventRepository.findFirstByCategoryId(catId) != null) {
+            throw new ConflictException("The category is not empty");
+        }
+
         categoriesRepository.deleteById(catId);
         log.info("Категория с id '{}' - удалена", catId);
     }
@@ -61,8 +68,8 @@ public class CategoriesServiceImpl implements CategoriesService {
     }
 
     private Category findCategoryByIdOrElseThrow(Long id) {
-        return categoriesRepository.findById(id).orElseThrow(() -> new CategoriesNotFoundException(
-                String.format("Категории с id %d нет в базе", id)
+        return categoriesRepository.findById(id).orElseThrow(() -> new NotFoundException(
+                String.format("Category with id=%d was not found", id)
         ));
     }
 }

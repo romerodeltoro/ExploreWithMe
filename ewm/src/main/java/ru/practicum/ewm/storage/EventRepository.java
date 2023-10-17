@@ -11,6 +11,7 @@ import ru.practicum.ewm.model.event.EventState;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -21,6 +22,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
     Page<Event> findAllByInitiatorId(Long initiatorId, Pageable pageable);
 
     Event findByIdAndInitiatorIdAndStateIn(Long eventId, Long initiatorId, List<EventState> states);
+    Optional<Event> findByIdAndState(Long eventId, EventState state);
+    Event findFirstByCategoryId(Long categoryId);
 
     @Query("select e " +
             "from Event e " +

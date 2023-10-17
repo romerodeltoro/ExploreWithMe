@@ -3,16 +3,14 @@ package ru.practicum.ewm.controller.admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.model.category.Category;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.model.event.UpdateEventAdminRequest;
 import ru.practicum.ewm.model.event.EventFullDto;
-import ru.practicum.ewm.model.event.EventShort;
 import ru.practicum.ewm.model.event.EventState;
+import ru.practicum.ewm.model.event.UpdateEventUserRequest;
 import ru.practicum.ewm.service.EventService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
@@ -25,6 +23,13 @@ import java.util.Set;
 public class EventsAdminController {
 
     private final EventService eventService;
+
+    @PatchMapping("/{eventId}")
+    public  ResponseEntity<EventFullDto> updateEvent(
+            @PathVariable Long eventId,
+            @RequestBody @Valid UpdateEventAdminRequest eventDto) {
+        return ResponseEntity.ok().body(eventService.updateEventByAdmin(eventId, eventDto));
+    }
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getAllEvents(

@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.exception.UserNotFoundException;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.mapper.UserMapper;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.model.user.UserDto;
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private User findUserByIdOrElseThrow(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
+        return userRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Пользователя с id %d нет в базе", id)
         ));
     }
