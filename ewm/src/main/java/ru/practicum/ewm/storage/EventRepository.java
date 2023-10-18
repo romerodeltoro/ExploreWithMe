@@ -3,6 +3,7 @@ package ru.practicum.ewm.storage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ import java.util.Set;
 
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
 
     Page<Event> findAllByInitiatorId(Long initiatorId, Pageable pageable);
@@ -38,4 +39,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
             LocalDateTime rangeStart,
             LocalDateTime rangeEnd,
             Pageable pageable);
+
+    Optional<List<Event>> findAllByIdIn(List<Long> events);
 }

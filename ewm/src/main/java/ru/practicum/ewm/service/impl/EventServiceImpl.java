@@ -169,7 +169,6 @@ public class EventServiceImpl implements EventService {
                     request.setStatus(RequestStatus.REJECTED);
                 }
             }
-
             if (event.getConfirmedRequests().equals(event.getParticipantLimit())) {
                 throw new OperationConditionsException("The participant limit has been reached");
             }

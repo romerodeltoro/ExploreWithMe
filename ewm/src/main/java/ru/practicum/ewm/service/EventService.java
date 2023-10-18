@@ -11,7 +11,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
-@Validated
+
 public interface EventService {
     EventFullDto createEvent(Long userId, @Valid EventDto eventDto);
 

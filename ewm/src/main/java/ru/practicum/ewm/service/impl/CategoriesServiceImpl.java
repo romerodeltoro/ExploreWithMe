@@ -58,7 +58,7 @@ public class CategoriesServiceImpl implements CategoriesService {
         }
 
         categoriesRepository.deleteById(catId);
-        log.info("Категория с id '{}' - удалена", catId);
+        log.info("Категория с id='{}' - удалена", catId);
     }
 
     @Override

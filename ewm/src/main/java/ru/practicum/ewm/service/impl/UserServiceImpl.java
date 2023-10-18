@@ -46,12 +46,12 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long userId) {
         findUserByIdOrElseThrow(userId);
         userRepository.deleteById(userId);
-        log.info("Пользователь с id '{}' - удален", userId);
+        log.info("Пользователь с id='{}' - удален", userId);
     }
 
     private User findUserByIdOrElseThrow(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new NotFoundException(
-                String.format("Пользователя с id %d нет в базе", id)
+                String.format("Пользователя с id=%d нет в базе", id)
         ));
     }
 }

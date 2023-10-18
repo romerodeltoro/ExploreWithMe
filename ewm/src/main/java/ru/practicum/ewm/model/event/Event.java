@@ -64,7 +64,5 @@ public class Event {
     private String title;
     @Column(name = "views")
     private Integer views = 0;
-    @ManyToOne
-    private Compilation compilation;
 }
 
