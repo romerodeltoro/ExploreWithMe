@@ -49,6 +49,8 @@ public class Event {
     private Integer participantLimit;
     @Column(name = "confirmed_requests")
     private Integer confirmedRequests = 0;
+    @Column(name = "available")
+    private Boolean available = true;
     @Column(name = "published_on")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedOn;

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -21,11 +22,14 @@ import ru.practicum.ewm.storage.*;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.EndpointHit;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -167,6 +171,7 @@ public class EventServiceImpl implements EventService {
                     event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                 } else {
                     request.setStatus(RequestStatus.REJECTED);
+                    event.setAvailable(false);
                 }
             }
             if (event.getConfirmedRequests().equals(event.getParticipantLimit())) {
@@ -216,6 +221,92 @@ public class EventServiceImpl implements EventService {
         LocalDateTime end = LocalDateTime.parse(rangeEnd, formatter);
 
         return null;
+    }
+
+
+    @Override
+    public List<EventShortDto> getAllEventsBySearch(Map<String, String> queryParams, Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from, size);
+        SearchFilter filter = queryParamsToSearchFilter(queryParams);
+        List<Specification<Event>> specifications = searchFilterToSpecifications(filter);
+        List<Event> events = eventRepository.findAll(specifications.stream()
+                .reduce(Specification::and)
+                .orElseThrow(() -> new RuntimeException("Не заданы условия поиска")), pageable).toList();
+
+        return events.stream().map(EventMapper.INSTANCE::toEventShort).collect(Collectors.toList());
+
+    }
+
+    private List<Specification<Event>> searchFilterToSpecifications(SearchFilter filter) {
+        List<Specification<Event>> specifications = new ArrayList<>();
+       specifications.add(filter.getText() != null ? searchByText(filter.getText()) : null);
+        specifications.add(filter.getCategories() != null ? searchByCategories(filter.getCategories()) : null);
+        specifications.add(filter.getPaid() != null ? searchByPaid(filter.getPaid()) : null);
+        specifications.add(filter.getRangeStart() != null ?
+                searchByRange(filter.getRangeStart(), filter.getRangeEnd()) : searchByNullRange());
+          specifications.add(filter.getOnlyAvailable().equals(true) ? searchByAvailable(filter.getOnlyAvailable()) : null);
+        specifications.add(searchByState(filter.getState()));
+        specifications.add(searchSort(filter.getSort()));
+
+        return specifications.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private Specification<Event> searchByText(String text) {
+        return (root, query, cb) -> cb
+                .or(cb.like(cb.lower(root.get("annotation")), "%" + text.toLowerCase() + "%"),
+                        cb.like(cb.lower(root.get("description")), "%" + text.toLowerCase() + "%"));
+    }
+
+    private Specification<Event> searchByCategories(List<Long> categories) {
+        return (root, query, cb) -> cb.in(root.get("category").get("id")).value(categories);
+    }
+
+    private Specification<Event> searchByPaid(Boolean paid) {
+        return (root, query, cb) -> cb.equal(root.get("paid"), paid);
+    }
+
+    private Specification<Event> searchByRange(LocalDateTime start, LocalDateTime end) {
+        return (root, query, cb) -> cb.between(root.get("eventDate"), start, end);
+    }
+
+    private Specification<Event> searchByNullRange() {
+        return (root, query, cb) -> cb.greaterThan(root.get("eventDate"), LocalDateTime.now());
+    }
+
+    private Specification<Event> searchByAvailable(Boolean available) {
+        return (root, query, cb) -> cb.equal(root.get("available"), available);
+    }
+
+    private Specification<Event> searchByState(EventState state) {
+        return (root, query, cb) -> cb.equal(root.get("state"), state);
+    }
+
+    private Specification<Event> searchSort(String sort) {
+        return (root, query, cb) -> {
+            if (sort.equalsIgnoreCase("EVENT_DATE")) {
+                return query.orderBy(cb.asc(root.get("eventDate"))).getRestriction();
+            } else {
+                return query.orderBy(cb.desc(root.get("views"))).getRestriction();
+            }
+        };
+    }
+
+
+
+    private SearchFilter queryParamsToSearchFilter(Map<String, String> queryParams) {
+
+        return SearchFilter.builder()
+                .text(queryParams.get("text"))
+                .categories(Arrays.stream(queryParams.get("categories").split(","))
+                        .map(s -> Long.parseLong(s.trim())).collect(Collectors.toList()))
+                .paid(Boolean.parseBoolean(queryParams.get("paid")))
+                .rangeStart(LocalDateTime.parse(queryParams.get("rangeStart"), formatter))
+                .rangeEnd(LocalDateTime.parse(queryParams.get("rangeEnd"), formatter))
+                .onlyAvailable(Boolean.parseBoolean(
+                        queryParams.get("onlyAvailable") != null ? queryParams.get("onlyAvailable") : "false"))
+                .sort(queryParams.get("sort"))
+                .state(EventState.PUBLISHED)
+                .build();
     }
 
     private Event getEventByIdOrElseThrow(Long id) {

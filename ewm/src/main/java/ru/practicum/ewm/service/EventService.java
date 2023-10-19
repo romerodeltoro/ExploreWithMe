@@ -9,6 +9,7 @@ import ru.practicum.ewm.model.request.ParticipationRequestDto;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -51,4 +52,6 @@ public interface EventService {
             String sort,
             Integer from,
             Integer size);
+
+    List<EventShortDto> getAllEventsBySearch(Map<String, String> queryParams, Integer from, Integer size);
 }

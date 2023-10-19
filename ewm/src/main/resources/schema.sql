@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS events (
   paid boolean NOT NULL,
   participant_limit int,
   confirmed_requests int,
+  available boolean,
   published_on timestamp WITHOUT TIME ZONE,
   request_moderation boolean,
   state varchar,
