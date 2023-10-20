@@ -4,7 +4,9 @@ import lombok.*;
 
 import java.util.List;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequestStatusUpdateRequest {

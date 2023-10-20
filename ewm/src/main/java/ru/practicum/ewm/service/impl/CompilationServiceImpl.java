@@ -39,7 +39,6 @@ public class CompilationServiceImpl implements CompilationService {
                 .save(CompilationMapper.INSTANCE.newCompilationToCompilation(newCompilationDto));
 
         log.info("Создана подборка событий - {}", newCompilationDto.getTitle());
-
         return setEventsToCompilationDto(compilation);
     }
 
@@ -56,16 +55,16 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setEvents(
                 updateCompilation.getEvents() != null ? updateCompilation.getEvents() : compilation.getEvents()
         );
-        log.info("Подборка событий {} обновлена", compilation.getTitle());
 
+        log.info("Подборка событий {} обновлена", compilation.getTitle());
         return setEventsToCompilationDto(compilation);
     }
 
     @Override
     public CompilationDto getCompilation(Long compId) {
         Compilation compilation = getCompilationByIdOrElseThrow(compId);
-        log.info("Получена подборка событий - {}", compilation.getTitle());
 
+        log.info("Получена подборка событий - {}", compilation.getTitle());
         return setEventsToCompilationDto(compilation);
     }
 
@@ -74,6 +73,7 @@ public class CompilationServiceImpl implements CompilationService {
     public void deleteCompilation(Long compId) {
         getCompilationByIdOrElseThrow(compId);
         compilationRepository.deleteById(compId);
+
         log.info("Подборка событий с id={} удалена", compId);
     }
 
@@ -81,24 +81,31 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> getAllCompilations(Boolean pinned, Integer from, Integer size) {
 
         Pageable pageable = PageRequest.of(from, size);
-        List<Compilation> compilations = compilationRepository.findAllByPinned(pinned, pageable).toList();
+        List<Compilation> compilations;
+        if (pinned != null) {
+            compilations = compilationRepository.findAllByPinned(pinned, pageable).toList();
+        } else {
+            compilations = compilationRepository.findAll(pageable).toList();
+        }
 
-        log.info("Получена подборка событий по заданным пораметрам");
+        log.info("Получена подборка событий по заданным параметрам");
         return compilations.stream().map(this::setEventsToCompilationDto).collect(Collectors.toList());
     }
 
     private Compilation getCompilationByIdOrElseThrow(Long id) {
         return compilationRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Compilation with id=%d was not found", id)));
-
     }
 
     private CompilationDto setEventsToCompilationDto(Compilation compilation) {
-        List<Event> events = eventRepository.findAllByIdIn(compilation.getEvents())
-                .orElseThrow(() -> new NotFoundException("Event not found"));
-        CompilationDto compilationDto = CompilationMapper.INSTANCE.toCompilationDto(compilation);
-        compilationDto.setEvents(events.stream().map(EventMapper.INSTANCE::toEventShort).collect(Collectors.toList()));
-
-        return compilationDto;
+        if (compilation.getEvents() != null) {
+            List<Event> events = eventRepository.findAllByIdIn(compilation.getEvents())
+                    .orElseThrow(() -> new NotFoundException("Event not found"));
+            CompilationDto compilationDto = CompilationMapper.INSTANCE.toCompilationDto(compilation);
+            compilationDto.setEvents(events.stream().map(EventMapper.INSTANCE::toEventShort).collect(Collectors.toList()));
+            return compilationDto;
+        } else {
+            return CompilationMapper.INSTANCE.toCompilationDto(compilation);
+        }
     }
 }

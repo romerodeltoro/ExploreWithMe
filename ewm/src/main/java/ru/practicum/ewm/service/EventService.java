@@ -1,6 +1,5 @@
 package ru.practicum.ewm.service;
 
-import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.model.event.*;
 import ru.practicum.ewm.model.request.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.model.request.EventRequestStatusUpdateResult;
@@ -10,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public interface EventService {
@@ -22,14 +20,7 @@ public interface EventService {
 
     EventFullDto updateEvent(Long userId, Long eventId, EventDto eventDto);
 
-    List<EventFullDto> getToAdminAllEvents(
-            Set<Long> users,
-            Set<EventState> states,
-            Set<Long> categories,
-            String rangeStart,
-            String rangeEnd,
-            Integer from,
-            Integer size);
+    List<EventFullDto> getAdminAllEvents(Map<String, String> queryParams, Integer from, Integer size);
 
     EventFullDto updateEventByUser(Long userId, Long eventId, UpdateEventUserRequest eventDto);
 
@@ -42,16 +33,9 @@ public interface EventService {
 
     EventFullDto getPublicEvent(Long id, HttpServletRequest request);
 
-    List<EventShortDto> getPublicAllEvents(
-            String text,
-            List<Long> categories,
-            Boolean paid,
-            String rangeStart,
-            String rangeEnd,
-            Boolean onlyAvailable,
-            String sort,
-            Integer from,
-            Integer size);
+    List<EventShortDto> getPublicAllEvents(Map<String, String> queryParams, Integer from, Integer size, HttpServletRequest request);
 
-    List<EventShortDto> getAllEventsBySearch(Map<String, String> queryParams, Integer from, Integer size);
+//    List<EventShortDto> getAllEventsBySearchFilter(SearchFilter filter, Integer from, Integer size);
+
+//    List<EventShortDto> getAllEventsBySearch(Map<String, String> queryParams, Integer from, Integer size);
 }

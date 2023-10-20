@@ -1,6 +1,7 @@
 package ru.practicum.ewm.model.user;
 
 import lombok.*;
+
 import javax.persistence.*;
 
 @Getter
@@ -15,7 +16,7 @@ public class User {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
     @Column(name = "email", nullable = false)
     private String email;

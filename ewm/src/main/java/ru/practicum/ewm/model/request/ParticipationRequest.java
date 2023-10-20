@@ -7,10 +7,12 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "participation_requests",  schema = "public")
+@Table(name = "participation_requests", schema = "public")
 public class ParticipationRequest {
     @Id
     @Column(name = "id")

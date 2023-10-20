@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.ewm.model.location.LocationDto;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.location.LocationDto;
 import ru.practicum.ewm.model.user.UserShort;
 
 @Getter

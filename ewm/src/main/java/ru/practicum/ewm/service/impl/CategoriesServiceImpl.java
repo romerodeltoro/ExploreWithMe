@@ -24,6 +24,7 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     private final CategoriesRepository categoriesRepository;
     private final EventRepository eventRepository;
+
     @Override
     @Transactional
     public Category createCategory(CategoryDto newCategory) {

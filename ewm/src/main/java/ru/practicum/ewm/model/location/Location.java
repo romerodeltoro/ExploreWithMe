@@ -4,7 +4,9 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "locations", schema = "public")
 @NoArgsConstructor

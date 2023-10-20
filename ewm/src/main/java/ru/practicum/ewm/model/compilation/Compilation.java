@@ -13,7 +13,8 @@ import org.hibernate.annotations.TypeDefs;
 import javax.persistence.*;
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "compilations", schema = "public")
 @NoArgsConstructor
@@ -33,6 +34,6 @@ public class Compilation {
     private String title;
     @Type(type = "jsonb")
     @Column(name = "events", columnDefinition = "jsonb")
-    private List<Long> events ;
+    private List<Long> events;
 
 }

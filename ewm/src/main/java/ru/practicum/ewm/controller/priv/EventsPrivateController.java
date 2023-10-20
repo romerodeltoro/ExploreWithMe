@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.model.event.*;
+import ru.practicum.ewm.model.event.EventDto;
+import ru.practicum.ewm.model.event.EventFullDto;
+import ru.practicum.ewm.model.event.EventShortDto;
+import ru.practicum.ewm.model.event.UpdateEventUserRequest;
 import ru.practicum.ewm.model.request.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.model.request.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.model.request.ParticipationRequestDto;
@@ -46,7 +49,7 @@ public class EventsPrivateController {
     }
 
     @PatchMapping("/{eventId}")
-    public  ResponseEntity<EventFullDto> updateEvent(
+    public ResponseEntity<EventFullDto> updateEvent(
             @PathVariable Long userId,
             @PathVariable Long eventId,
             @RequestBody @Valid UpdateEventUserRequest eventDto) {

@@ -25,10 +25,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUsers(List<Long> ids, Integer from, Integer size) {
-        if(ids == null) {
+        if (ids == null) {
+            log.info("Получен список пользователей");
             return userRepository.findAll(PageRequest.of(from, size)).toList();
         } else {
             Pageable pageable = PageRequest.of(from, size);
+
+            log.info("Получен список пользователей с id={}", ids);
             return userRepository.findAllByIdAndPage(ids, pageable).toList();
         }
     }
@@ -37,6 +40,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User createUser(UserDto userDto) {
         User user = userRepository.save(UserMapper.INSTANCE.toUser(userDto));
+
         log.info("Создан пользователь - {}", user);
         return user;
     }
@@ -49,8 +53,8 @@ public class UserServiceImpl implements UserService {
         log.info("Пользователь с id='{}' - удален", userId);
     }
 
-    private User findUserByIdOrElseThrow(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new NotFoundException(
+    private void findUserByIdOrElseThrow(Long id) {
+        userRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Пользователя с id=%d нет в базе", id)
         ));
     }

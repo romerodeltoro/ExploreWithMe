@@ -2,7 +2,9 @@ package ru.practicum.ewm.model.request;
 
 import lombok.*;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequestDto {

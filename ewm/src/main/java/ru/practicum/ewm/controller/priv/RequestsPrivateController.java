@@ -35,4 +35,4 @@ public class RequestsPrivateController {
             @PathVariable Long requestId) {
         return ResponseEntity.ok().body(requestsService.cancelRequest(userId, requestId));
     }
- }
+}

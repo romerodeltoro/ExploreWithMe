@@ -48,8 +48,8 @@ public class RequestsServiceImpl implements RequestsService {
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
         }
         requestRepository.save(request);
-        log.info("Запрос пользователем с id={} на участие в событии с id={} создан", userId, eventId);
 
+        log.info("Запрос пользователем с id={} на участие в событии с id={} создан", userId, eventId);
         return RequestMapper.INSTANCE.toRequestDto(request);
     }
 
@@ -57,8 +57,8 @@ public class RequestsServiceImpl implements RequestsService {
     public List<ParticipationRequestDto> getRequests(Long userId) {
         getUserByIdOrElseThrow(userId);
         List<ParticipationRequest> requests = requestRepository.findAllByRequester(userId);
-        log.info("Получен список запросов пользователя с id={}", userId);
 
+        log.info("Получен список запросов пользователя с id={}", userId);
         return requests.stream().map(RequestMapper.INSTANCE::toRequestDto).collect(Collectors.toList());
     }
 
@@ -68,15 +68,14 @@ public class RequestsServiceImpl implements RequestsService {
         getUserByIdOrElseThrow(userId);
         ParticipationRequest request = getRequestByIdOrElseThrow(requestId);
         request.setStatus(RequestStatus.CANCELED);
-        log.info("Запрос пользователем с id={} на участие в событии с id={} отменен", userId, request.getEvent());
 
+        log.info("Запрос пользователем с id={} на участие в событии с id={} отменен", userId, request.getEvent());
         return RequestMapper.INSTANCE.toRequestDto(request);
     }
 
     private Event getEventByIdOrElseThrow(Long id) {
         return eventRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Event with id=%d was not found", id)));
-
     }
 
     private User getUserByIdOrElseThrow(Long id) {
@@ -103,8 +102,11 @@ public class RequestsServiceImpl implements RequestsService {
             throw new ConflictException("You cannot participate in an unpublished event");
         }
 
-        if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
-            throw new ConflictException("Event has reached the limit of requests for participation");
+        if (event.getParticipantLimit() != 0) {
+            if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+                throw new ConflictException("Event has reached the limit of requests for participation");
+            }
         }
+
     }
 }

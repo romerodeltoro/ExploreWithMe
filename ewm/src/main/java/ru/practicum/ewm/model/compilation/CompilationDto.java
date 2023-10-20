@@ -8,7 +8,8 @@ import ru.practicum.ewm.model.event.EventShortDto;
 
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompilationDto {

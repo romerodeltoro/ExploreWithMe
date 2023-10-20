@@ -1,7 +1,6 @@
 package ru.practicum.ewm.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.event.*;
@@ -14,10 +13,17 @@ public interface EventMapper {
     @Mapping(target = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     Event dtoToEvent(EventDto eventDto);
 
+
     @Mapping(target = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    Event userRequestToEvent(UpdateEventUserRequest newEvent);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    Event eventUserUpdate(UpdateEventUserRequest newEvent, @MappingTarget Event event);
+
+
     @Mapping(target = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    Event adminRequestToEvent(UpdateEventAdminRequest newEvent);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    Event eventAdminUpdate(UpdateEventAdminRequest newEvent, @MappingTarget Event event);
 
     Category map(Long categoryId);
 

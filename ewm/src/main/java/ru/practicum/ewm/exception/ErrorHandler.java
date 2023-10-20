@@ -1,17 +1,16 @@
 package ru.practicum.ewm.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +45,19 @@ public class ErrorHandler {
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violations);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> dataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.builder()
+                        .message(e.getMessage())
+                        .status(HttpStatus.CONFLICT)
+                        .timestamp(DateTimeFormatter.ofPattern(PATTERN).format(LocalDateTime.now()))
+                        .reason(e.getCause().toString())
+                        .build());
+
     }
 
 

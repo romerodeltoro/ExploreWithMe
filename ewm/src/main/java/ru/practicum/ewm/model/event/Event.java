@@ -5,9 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.ewm.model.compilation.Compilation;
-import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.user.User;
 
 import javax.persistence.*;
@@ -44,7 +43,7 @@ public class Event {
     @JoinColumn(name = "location_id")
     private Location location;
     @Column(name = "paid", nullable = false)
-    private Boolean paid;
+    private Boolean paid = false;
     @Column(name = "participant_limit")
     private Integer participantLimit;
     @Column(name = "confirmed_requests")
