@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.stats.dto.EndpointHit;
 import ru.practicum.stats.dto.ViewStats;
+import ru.practicum.stats.server.exception.BadRequestException;
 import ru.practicum.stats.server.mapper.HitMapper;
 import ru.practicum.stats.server.model.Hit;
 import ru.practicum.stats.server.storage.HitRepository;
@@ -45,6 +46,10 @@ public class HitServiceImpl implements HitService {
 
         LocalDateTime startDate = LocalDateTime.parse(rangeStart, formatter);
         LocalDateTime endDate = LocalDateTime.parse(rangeEnd, formatter);
+
+        if (endDate.isBefore(startDate)) {
+            throw new BadRequestException("Date and time must be correct");
+        }
 
         List<Object[]> results;
 
