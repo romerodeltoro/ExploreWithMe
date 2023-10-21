@@ -1,6 +1,7 @@
 package ru.practicum.stats.server.model;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,7 +24,8 @@ public class Hit {
     private String uri;
     @Column(name = "ip", nullable = false)
     private String ip;
-    @Column(name = "time_stamp", nullable = false)
-    private LocalDateTime timestamp;
+    @Column(name = "time_stamp")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime timestamp = LocalDateTime.now();
 
 }

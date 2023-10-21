@@ -1,15 +1,20 @@
 package ru.practicum.stats.server.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.stats.dto.EndpointHit;
 import ru.practicum.stats.dto.ViewStats;
+import ru.practicum.stats.server.exception.BadRequestException;
 import ru.practicum.stats.server.mapper.HitMapper;
 import ru.practicum.stats.server.model.Hit;
 import ru.practicum.stats.server.storage.HitRepository;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,7 +30,7 @@ public class HitServiceImpl implements HitService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public EndpointHit createHit(EndpointHit hitDto) {
         Hit hit = repository.save(HitMapper.INSTANCE.toHit(hitDto));
         log.info("Создана новая запись о запросе: '{}'", hit);
@@ -33,16 +38,29 @@ public class HitServiceImpl implements HitService {
     }
 
     @Override
+    @SneakyThrows
     public List<ViewStats> getStats(String start, String end, Boolean unique, List<String> uris) {
-        LocalDateTime startDate = LocalDateTime.parse(start, formatter);
-        LocalDateTime endDate = LocalDateTime.parse(end, formatter);
+
+        String rangeStart = URLDecoder.decode(start, StandardCharsets.UTF_8.toString());
+        String rangeEnd = URLDecoder.decode(end, StandardCharsets.UTF_8.toString());
+
+        LocalDateTime startDate = LocalDateTime.parse(rangeStart, formatter);
+        LocalDateTime endDate = LocalDateTime.parse(rangeEnd, formatter);
+
+        if (endDate.isBefore(startDate)) {
+            throw new BadRequestException("Date and time must be correct");
+        }
 
         List<Object[]> results;
 
         if (uris == null) {
             results = getHitsIfUrisIsNull(startDate, endDate, unique);
         } else {
-            results = getHitsIfUris(startDate, endDate, unique, uris);
+            List<String> clearUris = uris.stream()
+                    .map(s -> s.replace("[", ""))
+                    .map(s -> s.replace("]", ""))
+                    .collect(Collectors.toList());
+            results = getHitsIfUris(startDate, endDate, unique, clearUris);
         }
 
         log.info("Получена статистика на uris: '{}'", uris);
