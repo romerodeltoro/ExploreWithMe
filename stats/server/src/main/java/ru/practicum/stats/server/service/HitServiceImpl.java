@@ -40,8 +40,6 @@ public class HitServiceImpl implements HitService {
     @SneakyThrows
     public List<ViewStats> getStats(String start, String end, Boolean unique, List<String> uris) {
 
-
-
         String rangeStart = URLDecoder.decode(start, StandardCharsets.UTF_8.toString());
         String rangeEnd = URLDecoder.decode(end, StandardCharsets.UTF_8.toString());
 

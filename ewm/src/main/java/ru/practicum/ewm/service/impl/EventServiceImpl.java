@@ -197,8 +197,8 @@ public class EventServiceImpl implements EventService {
         }
 
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
-        List<ParticipationRequest> confirmedRequests = requestRepository.findAllByStatus(RequestStatus.CONFIRMED);
-        List<ParticipationRequest> rejectedRequests = requestRepository.findAllByStatus(RequestStatus.REJECTED);
+        List<ParticipationRequest> confirmedRequests = requestRepository.findAllByStatusOrderByIdDesc(RequestStatus.CONFIRMED);
+        List<ParticipationRequest> rejectedRequests = requestRepository.findAllByStatusOrderByIdDesc(RequestStatus.REJECTED);
         updateResult.setConfirmedRequests(confirmedRequests.stream()
                 .map(RequestMapper.INSTANCE::toRequestDto).collect(Collectors.toList()));
         updateResult.setRejectedRequests(rejectedRequests

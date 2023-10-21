@@ -2,6 +2,7 @@ package ru.practicum.ewm.storage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.request.RequestStatus;
@@ -17,12 +18,13 @@ public interface RequestRepository extends JpaRepository<ParticipationRequest, L
 
     List<ParticipationRequest> findAllByEvent(Long event);
 
-    @Query("select r " +
-            "from ParticipationRequest r " +
-            "where event_id IN ?1 " +
-            "and status = 'PENDING'")
-    List<ParticipationRequest> findAllByIds(List<Long> ids);
+    @Query(value = "select * " +
+            "from participation_requests pr " +
+            "where id IN (:ids) " +
+            "and status = 'PENDING'",
+            nativeQuery = true)
+    List<ParticipationRequest> findAllByIds(@Param("ids") List<Long> ids);
 
-    List<ParticipationRequest> findAllByStatus(RequestStatus status);
+    List<ParticipationRequest> findAllByStatusOrderByIdDesc(RequestStatus status);
 
 }

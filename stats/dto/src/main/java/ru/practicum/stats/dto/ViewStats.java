@@ -3,7 +3,6 @@ package ru.practicum.stats.dto;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Builder
 @Data
 public class ViewStats {

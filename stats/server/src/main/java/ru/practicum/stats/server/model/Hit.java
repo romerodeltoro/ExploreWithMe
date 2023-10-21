@@ -26,6 +26,6 @@ public class Hit {
     private String ip;
     @Column(name = "time_stamp")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp  = LocalDateTime.now();
+    private LocalDateTime timestamp = LocalDateTime.now();
 
 }
