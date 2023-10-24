@@ -5,8 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.comment.CommentDto;
 import ru.practicum.ewm.model.location.LocationDto;
 import ru.practicum.ewm.model.user.UserShort;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,4 +33,6 @@ public class EventFullDto {
     private String publishedOn;
     private Integer confirmedRequests;
     private Integer views;
+    private List<CommentDto> comments;
+
 }

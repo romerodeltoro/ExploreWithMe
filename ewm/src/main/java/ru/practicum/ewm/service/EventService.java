@@ -18,8 +18,6 @@ public interface EventService {
 
     EventFullDto getEvent(Long userId, Long eventId);
 
-    EventFullDto updateEvent(Long userId, Long eventId, EventDto eventDto);
-
     List<EventFullDto> getAdminAllEvents(Map<String, String> queryParams, Integer from, Integer size);
 
     EventFullDto updateEventByUser(Long userId, Long eventId, UpdateEventUserRequest eventDto);
@@ -35,7 +33,4 @@ public interface EventService {
 
     List<EventShortDto> getPublicAllEvents(Map<String, String> queryParams, Integer from, Integer size, HttpServletRequest request);
 
-//    List<EventShortDto> getAllEventsBySearchFilter(SearchFilter filter, Integer from, Integer size);
-
-//    List<EventShortDto> getAllEventsBySearch(Map<String, String> queryParams, Integer from, Integer size);
 }

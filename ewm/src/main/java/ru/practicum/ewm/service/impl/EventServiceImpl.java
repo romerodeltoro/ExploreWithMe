@@ -8,12 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.exception.*;
+import ru.practicum.ewm.mapper.CommentMapper;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.LocationMapper;
 import ru.practicum.ewm.mapper.RequestMapper;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.comment.CommentDto;
 import ru.practicum.ewm.model.event.*;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.request.*;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@Validated
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -47,6 +47,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final LocationRepository locationRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
     private final StatsClient client;
     private final SearchSpecificationBuilder specificationBuilder;
 
@@ -83,17 +84,27 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto getEvent(Long userId, Long eventId) {
         User user = getUserByIdOrElseThrow(userId);
+
         Event event = getEventByIdOrElseThrow(eventId);
+        EventFullDto eventDto = EventMapper.INSTANCE.toEventFullDto(event);
+
+        eventDto.setComments(commentRepository.findAllByEventId(eventId).stream()
+                .map(c -> {
+                    CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(c);
+                    commentDto.setParticipant(isParticipant(
+                            requestRepository.findByRequesterAndEvent(c.getAuthor().getId(), eventId)));
+                    return commentDto;
+                        })
+                .collect(Collectors.toList()));
 
         log.info("Получена полная информация о событии - {}, добавленных пользователем - {}", event.getTitle(), user);
-        return EventMapper.INSTANCE.toEventFullDto(event);
+        return eventDto;
     }
 
-    @Override
-    @Transactional
-    public EventFullDto updateEvent(Long userId, Long eventId, EventDto eventDto) {
-        return null;
+    private Boolean isParticipant(ParticipationRequest request) {
+       return request.getStatus().equals(RequestStatus.CONFIRMED);
     }
+
 
     @Override
     @Transactional
@@ -176,7 +187,7 @@ public class EventServiceImpl implements EventService {
 
         if (requests.isEmpty()) {
             throw new ConflictException("The status cannot be changed because the " +
-                    "request being modified has an incorrect status: PENDING");
+                    "request being modified has an incorrect status");
         }
 
         if (updateRequest.getStatus().equals(RequestStatus.CONFIRMED)) {
