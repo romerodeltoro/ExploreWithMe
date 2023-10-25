@@ -13,6 +13,7 @@ public interface CommentMapper {
     CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 
     Comment toComment(NewCommentDto newCommentDto);
+
     @Mapping(target = "authorName", source = "author.name")
     @Mapping(target = "created", dateFormat = "yyyy-MM-dd HH:mm:ss")
     CommentDto toCommentDto(Comment comment);

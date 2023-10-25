@@ -11,16 +11,11 @@ import ru.practicum.ewm.model.comment.Comment;
 import ru.practicum.ewm.model.comment.CommentDto;
 import ru.practicum.ewm.model.comment.NewCommentDto;
 import ru.practicum.ewm.model.event.Event;
-import ru.practicum.ewm.model.request.ParticipationRequest;
-import ru.practicum.ewm.model.request.RequestStatus;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.storage.CommentRepository;
 import ru.practicum.ewm.storage.EventRepository;
-import ru.practicum.ewm.storage.RequestRepository;
 import ru.practicum.ewm.storage.UserRepository;
-
-import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -31,19 +26,17 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final RequestRepository requestRepository;
+
 
     @Override
     @Transactional
     public CommentDto postComment(Long userId, Long eventId, NewCommentDto newDto) {
         User user = ifUserExistReturnUser(userId);
         Event event = ifEventExistReturnItem(eventId);
-        ParticipationRequest request = requestRepository.findByRequesterAndEvent(userId, eventId);
         Comment comment = commentRepository.save(CommentMapper.INSTANCE.toComment(newDto));
         comment.setAuthor(user);
         comment.setEvent(event);
         CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(comment);
-        commentDto.setParticipant(request.getStatus().equals(RequestStatus.CONFIRMED));
 
         log.info("Пользователем с id={} оставлен комментарий к событию с id={}", userId, eventId);
         return commentDto;
@@ -56,14 +49,12 @@ public class CommentServiceImpl implements CommentService {
         ifEventExistReturnItem(eventId);
         Comment comment = ifCommentExistReturnUser(commId);
 
-        if(comment.getAuthor().getId() != userId) {
-            throw new ForbiddenException("У вас нет прав доступа к содержимому");
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new ForbiddenException("You have no access rights to content");
         }
 
-        ParticipationRequest request = requestRepository.findByRequesterAndEvent(userId, eventId);
         comment.setText(newDto.getText());
         CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(comment);
-        commentDto.setParticipant(request.getStatus().equals(RequestStatus.CONFIRMED));
 
         log.info("Комментарий с id={} обновлен пользователем", commId);
         return commentDto;
@@ -73,11 +64,27 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long userId, Long eventId, Long commId) {
         Comment comment = ifCommentExistReturnUser(commId);
-        if(comment.getAuthor().getId() != userId) {
-            throw new ForbiddenException("У вас нет прав доступа к содержимому");
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new ForbiddenException("You have no access rights to content");
         }
         commentRepository.deleteById(commId);
         log.info("Комментарий с id='{}' - удален", commId);
+    }
+
+    @Override
+    public CommentDto getComment(Long userId, Long eventId, Long commId) {
+        ifUserExistReturnUser(userId);
+        ifEventExistReturnItem(eventId);
+
+        return CommentMapper.INSTANCE.toCommentDto(ifCommentExistReturnUser(commId));
+    }
+
+    @Override
+    @Transactional
+    public void deleteCommentByAdmin(Long eventId, Long commId) {
+        ifCommentExistReturnUser(commId);
+        commentRepository.deleteById(commId);
+        log.info("Комментарий с id='{}' - удален админом", commId);
     }
 
     private Comment ifCommentExistReturnUser(Long id) {
@@ -89,7 +96,6 @@ public class CommentServiceImpl implements CommentService {
         return userRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Пользователя с id %d нет в базе", id)));
     }
-
 
     private Event ifEventExistReturnItem(Long id) {
         return eventRepository.findById(id).orElseThrow(() -> new NotFoundException(

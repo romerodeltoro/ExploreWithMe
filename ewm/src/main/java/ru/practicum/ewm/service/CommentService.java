@@ -9,4 +9,8 @@ public interface CommentService {
     CommentDto updateComment(Long userId, Long eventId, Long commId, NewCommentDto commentDto);
 
     void deleteComment(Long userId, Long eventId, Long commId);
+
+    void deleteCommentByAdmin(Long eventId, Long commId);
+
+    CommentDto getComment(Long userId, Long eventId, Long commId);
 }

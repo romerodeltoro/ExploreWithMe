@@ -1,11 +1,13 @@
 package ru.practicum.ewm.controller.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.model.event.EventFullDto;
 import ru.practicum.ewm.model.event.UpdateEventAdminRequest;
+import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.service.EventService;
 
 import javax.validation.Valid;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class EventsAdminController {
 
     private final EventService eventService;
+    private final CommentService commentService;
 
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(
@@ -36,6 +39,14 @@ public class EventsAdminController {
             @RequestParam(name = "size", defaultValue = "10", required = false) @Min(1) @Max(1000) Integer size) {
 
         return ResponseEntity.ok().body(eventService.getAdminAllEvents(queryParams, from, size));
+    }
+
+    @DeleteMapping("/{eventId}/comments/{commId}")
+    public ResponseEntity<Void> deleteCommentByAdmin(
+            @PathVariable Long eventId,
+            @PathVariable Long commId) {
+        commentService.deleteCommentByAdmin(eventId, commId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

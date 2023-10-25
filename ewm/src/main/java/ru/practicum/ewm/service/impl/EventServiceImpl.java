@@ -74,11 +74,16 @@ public class EventServiceImpl implements EventService {
         User user = getUserByIdOrElseThrow(userId);
         Pageable pageable = PageRequest.of(from, size);
         List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable).toList();
+        List<EventShortDto> eventShortDtos = events.stream()
+                .map(e -> {
+                    EventShortDto event = EventMapper.INSTANCE.toEventShort(e);
+                    event.setComments(commentRepository.findAllByEventId(e.getId()).size());
+                    return event;
+                })
+                .collect(Collectors.toList());
 
         log.info("Получен список событий добавленных пользователем - {}", user);
-        return events.stream()
-                .map(EventMapper.INSTANCE::toEventShort)
-                .collect(Collectors.toList());
+        return eventShortDtos;
     }
 
     @Override
@@ -87,24 +92,11 @@ public class EventServiceImpl implements EventService {
 
         Event event = getEventByIdOrElseThrow(eventId);
         EventFullDto eventDto = EventMapper.INSTANCE.toEventFullDto(event);
-
-        eventDto.setComments(commentRepository.findAllByEventId(eventId).stream()
-                .map(c -> {
-                    CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(c);
-                    commentDto.setParticipant(isParticipant(
-                            requestRepository.findByRequesterAndEvent(c.getAuthor().getId(), eventId)));
-                    return commentDto;
-                        })
-                .collect(Collectors.toList()));
+        eventDto.setComments(getCommentsByEventId(eventId));
 
         log.info("Получена полная информация о событии - {}, добавленных пользователем - {}", event.getTitle(), user);
         return eventDto;
     }
-
-    private Boolean isParticipant(ParticipationRequest request) {
-       return request.getStatus().equals(RequestStatus.CONFIRMED);
-    }
-
 
     @Override
     @Transactional
@@ -155,9 +147,16 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAll(specifications.stream()
                 .reduce(Specification::and)
                 .orElseThrow(() -> new BadRequestException("Incorrectly made request")), pageable).toList();
+        List<EventFullDto> eventFullDtos = events.stream()
+                .map(e -> {
+                    EventFullDto event = EventMapper.INSTANCE.toEventFullDto(e);
+                    event.setComments(getCommentsByEventId(e.getId()));
+                    return event;
+                })
+                .collect(Collectors.toList());
 
         log.info("Админом получен список событий по заданным параметрам о событии");
-        return events.stream().map(EventMapper.INSTANCE::toEventFullDto).collect(Collectors.toList());
+        return eventFullDtos;
     }
 
     @Override
@@ -232,9 +231,11 @@ public class EventServiceImpl implements EventService {
         if (!stats.equals(newStats)) {
             event.setViews(event.getViews() + 1);
         }
+        EventFullDto eventDto = EventMapper.INSTANCE.toEventFullDto(event);
+        eventDto.setComments(getCommentsByEventId(id));
 
         log.info("Просмотрена полная информация о событии с id={}", id);
-        return EventMapper.INSTANCE.toEventFullDto(event);
+        return eventDto;
     }
 
     @SneakyThrows
@@ -256,6 +257,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getPublicAllEvents(
             Map<String, String> queryParams, Integer from, Integer size, HttpServletRequest request) {
+
         Pageable pageable = PageRequest.of(from, size);
         SearchFilter filter = SearchFilter.queryParamsToSearchFilter(queryParams);
         filter.setState(EventState.PUBLISHED);
@@ -263,13 +265,21 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAll(specifications.stream()
                 .reduce(Specification::and)
                 .orElseThrow(() -> new BadRequestException("Incorrectly made request")), pageable).toList();
+        List<EventShortDto> eventShortDtos = events.stream()
+                .map(e -> {
+                    EventShortDto event = EventMapper.INSTANCE.toEventShort(e);
+                    event.setComments(commentRepository.findAllByEventId(e.getId()).size());
+                    return event;
+                })
+                .collect(Collectors.toList());
 
         createHit(request);
 
         log.info("Получен публичный список событий по заданным параметрам о событии");
-        return events.stream().map(EventMapper.INSTANCE::toEventShort).collect(Collectors.toList());
+        return eventShortDtos;
 
     }
+
 
     private Event getEventByIdOrElseThrow(Long id) {
         return eventRepository.findById(id).orElseThrow(() -> new NotFoundException(
@@ -368,6 +378,13 @@ public class EventServiceImpl implements EventService {
         hit.setApp("explore-with-me");
 
         client.createEndpointHit(hit);
+    }
+
+    private List<CommentDto> getCommentsByEventId(Long id) {
+        return commentRepository.findAllByEventId(id)
+                .stream()
+                .map(CommentMapper.INSTANCE::toCommentDto)
+                .collect(Collectors.toList());
     }
 
 }
