@@ -7,9 +7,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.model.comment.CommentDto;
 import ru.practicum.ewm.model.comment.NewCommentDto;
+import ru.practicum.ewm.model.comment.UpdateCommentRequest;
 import ru.practicum.ewm.service.CommentService;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,8 +34,8 @@ public class CommentsPrivateController {
             @PathVariable Long userId,
             @PathVariable Long eventId,
             @PathVariable Long commId,
-            @RequestBody @Valid NewCommentDto commentDto) {
-        return ResponseEntity.ok().body(commentService.updateComment(userId, eventId, commId, commentDto));
+            @RequestBody @Valid UpdateCommentRequest request) {
+        return ResponseEntity.ok().body(commentService.updateComment(userId, eventId, commId, request));
     }
 
     @GetMapping("/{commId}")
@@ -42,6 +44,12 @@ public class CommentsPrivateController {
             @PathVariable Long eventId,
             @PathVariable Long commId) {
         return ResponseEntity.ok().body(commentService.getComment(userId, eventId, commId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CommentDto>> getAllComment(
+            @PathVariable Long eventId) {
+        return ResponseEntity.ok().body(commentService.getAllComments(eventId));
     }
 
     @DeleteMapping("/{commId}")

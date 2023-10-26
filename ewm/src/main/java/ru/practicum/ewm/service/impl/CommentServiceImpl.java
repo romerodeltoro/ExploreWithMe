@@ -10,12 +10,16 @@ import ru.practicum.ewm.mapper.CommentMapper;
 import ru.practicum.ewm.model.comment.Comment;
 import ru.practicum.ewm.model.comment.CommentDto;
 import ru.practicum.ewm.model.comment.NewCommentDto;
+import ru.practicum.ewm.model.comment.UpdateCommentRequest;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.storage.CommentRepository;
 import ru.practicum.ewm.storage.EventRepository;
 import ru.practicum.ewm.storage.UserRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,8 +35,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto postComment(Long userId, Long eventId, NewCommentDto newDto) {
-        User user = ifUserExistReturnUser(userId);
-        Event event = ifEventExistReturnItem(eventId);
+        User user = ifUserExistReturn(userId);
+        Event event = ifEventExistReturn(eventId);
         Comment comment = commentRepository.save(CommentMapper.INSTANCE.toComment(newDto));
         comment.setAuthor(user);
         comment.setEvent(event);
@@ -44,16 +48,16 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto updateComment(Long userId, Long eventId, Long commId, NewCommentDto newDto) {
-        ifUserExistReturnUser(userId);
-        ifEventExistReturnItem(eventId);
-        Comment comment = ifCommentExistReturnUser(commId);
+    public CommentDto updateComment(Long userId, Long eventId, Long commId, UpdateCommentRequest request) {
+        ifUserExistReturn(userId);
+        ifEventExistReturn(eventId);
+        Comment comment = ifCommentExistReturn(commId);
 
         if (!comment.getAuthor().getId().equals(userId)) {
             throw new ForbiddenException("You have no access rights to content");
         }
 
-        comment.setText(newDto.getText());
+        comment.setText(request.getText());
         CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(comment);
 
         log.info("Комментарий с id={} обновлен пользователем", commId);
@@ -62,8 +66,20 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
+    public CommentDto updateCommentByAdmin(Long eventId, Long commId, UpdateCommentRequest request) {
+        ifEventExistReturn(eventId);
+        Comment comment = ifCommentExistReturn(commId);
+        comment.setText(request.getText());
+        CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(comment);
+
+        log.info("Комментарий с id={} обновлен админом", commId);
+        return commentDto;
+    }
+
+    @Override
+    @Transactional
     public void deleteComment(Long userId, Long eventId, Long commId) {
-        Comment comment = ifCommentExistReturnUser(commId);
+        Comment comment = ifCommentExistReturn(commId);
         if (!comment.getAuthor().getId().equals(userId)) {
             throw new ForbiddenException("You have no access rights to content");
         }
@@ -73,31 +89,64 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getComment(Long userId, Long eventId, Long commId) {
-        ifUserExistReturnUser(userId);
-        ifEventExistReturnItem(eventId);
+        ifUserExistReturn(userId);
+        ifEventExistReturn(eventId);
+        CommentDto comment = CommentMapper.INSTANCE.toCommentDto(ifCommentExistReturn(commId));
+        log.info("Пользователь с id={} получил комментарий с id={}", userId, commId);
 
-        return CommentMapper.INSTANCE.toCommentDto(ifCommentExistReturnUser(commId));
+        return comment;
+    }
+
+    @Override
+    public List<CommentDto> getAllComments(Long eventId) {
+        ifEventExistReturn(eventId);
+        List<CommentDto> commentDtos = commentRepository.findAllByEventId(eventId).stream()
+                .map(CommentMapper.INSTANCE::toCommentDto)
+                .collect(Collectors.toList());
+        log.info("К событию с id={} получены все комментарии", eventId);
+
+        return commentDtos;
     }
 
     @Override
     @Transactional
     public void deleteCommentByAdmin(Long eventId, Long commId) {
-        ifCommentExistReturnUser(commId);
+        ifCommentExistReturn(commId);
         commentRepository.deleteById(commId);
         log.info("Комментарий с id='{}' - удален админом", commId);
     }
 
-    private Comment ifCommentExistReturnUser(Long id) {
+    @Override
+    public CommentDto getPublicComment(Long eventId, Long commId) {
+        ifEventExistReturn(eventId);
+        CommentDto commentDto = CommentMapper.INSTANCE.toCommentDto(ifCommentExistReturn(commId));
+        log.info("К событию с id={} получен комментарий с id={}", eventId, commId);
+
+        return commentDto;
+    }
+
+//    @Override
+//    public List<CommentDto> getAllcomments(Long eventId) {
+//        ifEventExistReturn(eventId);
+//        List<CommentDto> commentDtos = commentRepository.findAllByEventId(eventId).stream()
+//                .map(CommentMapper.INSTANCE::toCommentDto)
+//                .collect(Collectors.toList());
+//        log.info("К событию с id={} получены все комментарии", eventId);
+//
+//        return commentDtos;
+//    }
+
+    private Comment ifCommentExistReturn(Long id) {
         return commentRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Комментария с id %d нет в базе", id)));
     }
 
-    private User ifUserExistReturnUser(Long id) {
+    private User ifUserExistReturn(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Пользователя с id %d нет в базе", id)));
     }
 
-    private Event ifEventExistReturnItem(Long id) {
+    private Event ifEventExistReturn(Long id) {
         return eventRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 String.format("Вещи с id %d нет в базе", id)));
     }
