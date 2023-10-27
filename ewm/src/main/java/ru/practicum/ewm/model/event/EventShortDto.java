@@ -30,4 +30,5 @@ public class EventShortDto {
     @NotBlank
     private UserShort initiator;
     private Integer views;
+    private Integer comments;
 }
